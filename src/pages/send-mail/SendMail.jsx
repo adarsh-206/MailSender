@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import SidebarWithNavbarLayout from "../../components/SidebarWithNavbarLayout";
 import ApiService from "../../service/ApiService";
 import Cookies from "js-cookie";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 function SendMail() {
   const [recipients, setRecipients] = useState("");
@@ -13,6 +15,8 @@ function SendMail() {
   const [selectedSmtpUser, setSelectedSmtpUser] = useState("");
   const [templates, setTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState("custom");
+  const [showPreview, setShowPreview] = useState(false);
+  const [attachment, setAttachment] = useState(null);
 
   const fetchTemplates = async () => {
     try {
@@ -43,6 +47,7 @@ function SendMail() {
 
   const handleTemplateSelection = (templateId) => {
     setSelectedTemplateId(templateId);
+    setAttachment(null); // Reset attachment when template changes
 
     if (templateId === "custom") {
       setSubject("");
@@ -54,6 +59,7 @@ function SendMail() {
       if (selectedTemplate) {
         setSubject(selectedTemplate.subject);
         setMessage(selectedTemplate.message);
+        setAttachment(selectedTemplate.attachment || null); // Set attachment if exists
       }
     }
   };
@@ -68,6 +74,8 @@ function SendMail() {
       subject,
       text: message,
       smtpUser: selectedSmtpUser,
+      attachment: attachment ? attachment : null,
+      userId: Cookies.get("userId"),
     };
 
     try {
@@ -78,6 +86,7 @@ function SendMail() {
       setMessage("");
       setSelectedSmtpUser("");
       setSelectedTemplateId("custom");
+      setAttachment(null);
     } catch (error) {
       console.error("Error sending email:", error);
       setFeedback("Failed to send email. Please try again.");
@@ -86,10 +95,20 @@ function SendMail() {
     }
   };
 
+  const handleAttachmentUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAttachment(URL.createObjectURL(file));
+    }
+  };
+
   return (
     <SidebarWithNavbarLayout>
-      <div className="flex items-center justify-center mt-6">
-        <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-3xl">
+      <div className="flex items-start justify-between mt-6 gap-4">
+        {/* Left Column: Email Form */}
+        <div
+          className={`bg-white shadow-md rounded-lg p-8 w-full border border-gray-300`}
+        >
           <h2 className="text-2xl font-bold text-teal-600 mb-6 text-center">
             Send an Email
           </h2>
@@ -161,17 +180,17 @@ function SendMail() {
                 onChange={(e) => setSubject(e.target.value)}
               />
             </div>
-            <div>
+            <div className="min-h-72">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Message
               </label>
-              <textarea
-                className="w-full p-3 border border-gray-300 rounded-lg text-sm shadow-sm focus:ring-2 focus:ring-teal-500 focus:outline-none"
-                rows="5"
-                placeholder="Enter your message"
+              <ReactQuill
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
-              ></textarea>
+                onChange={setMessage}
+                className="rounded-lg shadow-sm"
+                theme="snow"
+                style={{ height: 200 }}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -190,7 +209,52 @@ function SendMail() {
                 ))}
               </select>
             </div>
-            <div className="flex justify-center">
+
+            {/* Attachment Handling */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Attachment
+              </label>
+              {attachment ? (
+                <div className="flex items-center">
+                  <a
+                    href={
+                      typeof attachment === "string"
+                        ? `${import.meta.env.VITE_BASE_URL}/${attachment}`
+                        : attachment
+                    }
+                    className="text-teal-600 underline text-sm"
+                    download
+                    target="_blank"
+                  >
+                    View Attachment
+                  </a>
+                  <button
+                    type="button"
+                    className="ml-2 text-red-600"
+                    onClick={() => setAttachment(null)}
+                  >
+                    &#10005;
+                  </button>
+                </div>
+              ) : (
+                <input
+                  type="file"
+                  accept=".pdf,.docx,.jpg,.jpeg,.png"
+                  onChange={handleAttachmentUpload}
+                  className="p-3 border border-gray-300 rounded-lg text-sm shadow-sm focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                />
+              )}
+            </div>
+
+            <div className="flex justify-between">
+              <button
+                type="button"
+                onClick={() => setShowPreview(!showPreview)}
+                className="text-teal-500 underline text-sm"
+              >
+                {showPreview ? "Hide Preview" : "Show Preview"}
+              </button>
               <button
                 type="submit"
                 className="px-6 py-3 bg-teal-500 text-white font-medium text-sm rounded-lg shadow-md hover:bg-teal-600 focus:ring-2 focus:ring-teal-400 focus:outline-none transform transition duration-150 active:scale-95"
@@ -212,6 +276,26 @@ function SendMail() {
             )}
           </form>
         </div>
+
+        {/* Right Column: Preview */}
+        {showPreview && (
+          <div className="w-full max-w-lg bg-gray-100 shadow-md rounded-lg p-3 border">
+            <h3 className="text-center text-xl font-bold text-teal-600 mb-4">
+              Email Preview
+            </h3>
+            <div className="bg-white p-4 rounded-lg">
+              <p className="text-lg text-gray-600 mb-2">
+                <strong>Subject:</strong> {subject || ""}
+              </p>
+              <div
+                className="pt-6 text-gray-700"
+                dangerouslySetInnerHTML={{
+                  __html: message || "(No Message Content)",
+                }}
+              ></div>
+            </div>
+          </div>
+        )}
       </div>
     </SidebarWithNavbarLayout>
   );

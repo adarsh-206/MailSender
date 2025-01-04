@@ -21,31 +21,61 @@ function ManageTemplates() {
   };
 
   const handleSubmitTemplate = async (newTemplate) => {
+    const formData = new FormData();
+    formData.append("id", newTemplate?.id);
+    formData.append("name", newTemplate.name);
+    formData.append("subject", newTemplate.subject);
+    formData.append("message", newTemplate.message);
+
+    if (newTemplate.attachment) {
+      formData.append("attachment", newTemplate.attachment);
+    }
+
     try {
       if (isEditing) {
-        // Update existing template
         const response = await ApiService.put(
           `/templates/templates/${newTemplate.id}`,
-          newTemplate
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
+
+        console.log("templates", templates);
+        console.log("response", response);
+
         setTemplates(
           templates.map((template) =>
-            template.id === response.data.id ? response.data : template
+            template._id === response.template._id
+              ? response.template
+              : template
           )
         );
+        setIsAdding(false);
+        setIsEditing(null);
+        fetchTemplates();
       } else {
-        // Create new template
         const userId = Cookies.get("userId");
-        const response = await ApiService.post("/templates/create-template", {
-          ...newTemplate,
-          userId,
-        });
-        console.log("templates", response);
+        formData.append("userId", userId);
+
+        const response = await ApiService.post(
+          "/templates/create-template",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
 
         setTemplates([...templates, response.data]);
       }
+
       setIsAdding(false);
       setIsEditing(null);
+      fetchTemplates();
     } catch (error) {
       console.error("Error submitting template:", error);
     }
