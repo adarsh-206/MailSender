@@ -64,7 +64,7 @@ function SmtpSettings() {
   return (
     <SidebarWithNavbarLayout>
       <div>
-        <div className="h-screen p-8">
+        <div className="h-screen p-2">
           <div className="container mx-auto">
             {showForm ? (
               <SmtpUserForm

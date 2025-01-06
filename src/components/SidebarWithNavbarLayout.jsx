@@ -30,6 +30,12 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         >
           Manage Users
         </Link>
+        <Link
+          to="/email-listing"
+          className="block text-lg font-medium hover:bg-teal-400 rounded-md px-3 py-2"
+        >
+          Manage Email Listing
+        </Link>
       </nav>
       <button
         className="md:hidden text-white text-xl absolute top-4 right-4"

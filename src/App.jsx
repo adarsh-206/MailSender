@@ -7,6 +7,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import SmtpSettings from "./pages/smtp-settings/SmtpSettings";
 import ManageTemplates from "./pages/manage-templates/ManageTemplates";
 import SendMail from "./pages/send-mail/SendMail";
+import EmailListings from "./pages/email-listing/EmailListings";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/manage-email-settings" element={<SmtpSettings />} />
         <Route path="/manage-templates" element={<ManageTemplates />} />
         <Route path="/send-emails" element={<SendMail />} />
+        <Route path="/email-listing" element={<EmailListings />} />
       </Routes>
     </Router>
   );
