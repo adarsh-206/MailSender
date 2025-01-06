@@ -43,9 +43,6 @@ function ManageTemplates() {
           }
         );
 
-        console.log("templates", templates);
-        console.log("response", response);
-
         setTemplates(
           templates.map((template) =>
             template._id === response.template._id
