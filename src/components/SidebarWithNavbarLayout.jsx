@@ -97,12 +97,12 @@ const Navbar = ({ toggleSidebar }) => {
           />
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg py-2 w-40">
-              <Link
+              {/* <Link
                 to="/profile"
                 className="block px-4 py-2 text-teal-800 hover:bg-teal-100"
               >
                 Profile
-              </Link>
+              </Link> */}
               <Link
                 to="/manage-email-settings"
                 className="block px-4 py-2 text-teal-800 hover:bg-teal-100"
